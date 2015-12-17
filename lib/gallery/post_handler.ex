@@ -142,7 +142,13 @@ defmodule Gallery.PostHandler do
 
   @doc """
   Compute the MD5 checksum and return a string that looks as the strings
-  returned by md5sum command.
+  returned by md5sum command, though all upper case.
+
+  ## Examples
+
+    iex> Gallery.PostHandler.md5("abcd")
+    "E2FC714C4727EE9395F324CD2E7F331F"
+
   """
   def md5(content) do
     Enum.map(
