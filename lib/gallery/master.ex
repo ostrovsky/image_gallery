@@ -60,11 +60,13 @@ defmodule Gallery.Master do
   end
 
   def init(worker_sup) do
-    {:ok, tref} = :timer.send_interval(60000, :update_keys)
+    interval = 60000
+    {:ok, tref} = :timer.send_interval(interval, :update_keys)
     {:ok, update_keys(%{worker_sup: worker_sup,
                         receivers: [],
                         senders: [],
-                        timer: tref})}
+                        interval: interval,
+                        tref: tref})}
   end
 
   def terminate(_reason, state) do
@@ -80,6 +82,19 @@ defmodule Gallery.Master do
 
   def handle_call(:get_keys, _from, state) do
     {:reply, {:ok, state.receivers, state.senders}, state}
+  end
+
+  @doc """
+  Currently internal call to speed-up testing.
+  """
+  def handle_call({:set_update_interval, interval}, _from, state) do
+    {:ok, :cancel} = :timer.cancel(state.tref)
+    {:ok, tref} = :timer.send_interval(interval, :update_keys)
+    {:reply,
+     {:ok, state.interval},
+     %{state |
+       interval: interval,
+       tref: tref}}
   end
 
   def handle_info(:update_keys, state) do
